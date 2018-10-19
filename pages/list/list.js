@@ -7,7 +7,12 @@ Page({
   onLoad() {
     this.getWeekWeather()
   },
-  getWeekWeather() {
+  onPullDownRefresh() {
+    this.getWeekWeather(() => {
+      wx.stopPullDownRefresh()
+    })
+  },
+  getWeekWeather(callback) {
     wx.request({
       url: 'https://test-miniprogram.com/api/weather/future',
       data: {
@@ -16,8 +21,11 @@ Page({
       },
       success: res => {
         let result = res.data.result
-        // console.log(result)
+        console.log(result)
         this.setWeekWeather(result)
+      },
+      complete: () => {
+        callback && callback()
       }
     })
   },
@@ -27,13 +35,13 @@ Page({
       let date = new Date()
       date.setDate(date.getDate() + i)
       weekWeather.push({
-        day: dayMap[date.getDay],
+        day: dayMap[date.getDay()],
         date: `${date.getFullYear()}-${date.getMonth() + 1}-${date.getDate()}`,
         temp: `${result[i].minTemp}°-${result[i].maxTemp}°`,
         iconPath: '/images/' + result[i].weather + '-icon.png'
       })
     }
-    weekWeather[0].time = '今天'
+    weekWeather[0].day = '今天'
     this.setData({
       weekWeather: weekWeather
     })
